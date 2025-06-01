@@ -12,17 +12,23 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center space-x-2">
-          <span className="text-xl font-bold">LocalGov.AI</span>
+          <span className="text-xl font-bold tracking-tight">LocalGov.AI</span>
         </Link>
         
-        <nav className="flex items-center space-x-6">
-          <Link href="/about" className={pathname === "/about" ? "font-bold" : ""}>
+        <nav className="flex items-center gap-6">
+          <Link 
+            href="/about" 
+            className={`text-sm font-medium transition-colors hover:text-primary ${pathname === "/about" ? "text-primary" : "text-muted-foreground"}`}
+          >
             About
           </Link>
-          <Link href="/dashboard" className={pathname === "/dashboard" ? "font-bold" : ""}>
+          <Link 
+            href="/dashboard" 
+            className={`text-sm font-medium transition-colors hover:text-primary ${pathname === "/dashboard" ? "text-primary" : "text-muted-foreground"}`}
+          >
             Dashboard
           </Link>
-          <Button asChild variant="default">
+          <Button asChild variant="default" size="sm">
             <Link href="/auth">Sign In</Link>
           </Button>
           <ThemeToggle />
