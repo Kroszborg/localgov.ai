@@ -42,15 +42,11 @@ export default function SignInPage() {
         } = await supabase.auth.getSession();
 
         if (session?.user && session.access_token) {
-          console.log("Valid session found, redirecting to dashboard");
-          // Use window.location for immediate redirect
           window.location.replace("/dashboard");
           return;
         }
-
-        console.log("No valid session, showing sign in form");
       } catch (error) {
-        console.error("Error during auth check:", error);
+        // Silently handle auth errors
       } finally {
         setCheckingAuth(false);
       }
@@ -65,8 +61,6 @@ export default function SignInPage() {
     setError(null);
 
     try {
-      console.log("🔐 Starting sign in process...");
-
       // Clear any existing session first
       await supabase.auth.signOut();
 
@@ -76,7 +70,6 @@ export default function SignInPage() {
       });
 
       if (error) {
-        console.error("❌ Sign in error:", error);
         if (error.message.includes("Invalid login credentials")) {
           setError(
             "Invalid email or password. Please check your credentials and try again."
@@ -92,39 +85,15 @@ export default function SignInPage() {
       }
 
       if (data.session?.user && data.session.access_token) {
-        console.log("✅ Sign in successful!");
-        console.log("User:", data.user.email);
-        console.log(
-          "Session:",
-          data.session.access_token ? "Valid" : "Invalid"
-        );
-
-        // Store session info for debugging
-        console.log("Session data:", {
-          userId: data.user.id,
-          email: data.user.email,
-          tokenExpiry: new Date(data.session.expires_at! * 1000),
-        });
-
-        // Force immediate redirect - no delays
-        console.log("🚀 Redirecting to dashboard...");
         window.location.replace("/dashboard");
       } else {
-        console.error("❌ No session created");
         setError("Authentication failed. Please try again.");
       }
     } catch (err) {
-      console.error("❌ Unexpected error:", err);
       setError("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
-  };
-
-  // Manual redirect function for testing
-  const forceRedirect = () => {
-    console.log("🔄 Force redirecting to dashboard...");
-    window.location.replace("/dashboard");
   };
 
   if (checkingAuth) {
@@ -212,35 +181,6 @@ export default function SignInPage() {
                   )}
                 </Button>
               </form>
-
-              {/* Debug tools */}
-              <div className="space-y-2 pt-4 border-t">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={forceRedirect}
-                >
-                  🚀 Force Redirect to Dashboard
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={async () => {
-                    const { data } = await supabase.auth.getSession();
-                    console.log("Current session:", data.session);
-                    alert(
-                      data.session ? "Session exists!" : "No session found"
-                    );
-                  }}
-                >
-                  🔍 Check Current Session
-                </Button>
-              </div>
 
               <div className="text-center space-y-2">
                 <Link
