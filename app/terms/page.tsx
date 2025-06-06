@@ -37,8 +37,9 @@ export default function TermsPage() {
         Limitation of Liability
       </h2>
       <p className="mb-4">
-        LocalGov.AI is provided "as is" without warranties of any kind. We are
-        not liable for any damages resulting from your use of the service.
+        LocalGov.AI is provided &quot;as is&quot; without warranties of any
+        kind. We are not liable for any damages resulting from your use of the
+        service.
       </p>
       <h2 className="text-xl font-semibold mt-6 mb-2">Contact Us</h2>
       <p>
