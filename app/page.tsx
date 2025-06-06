@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,11 +9,53 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Search, MapPin, BookOpen, Shield } from "lucide-react";
 
 export default function Home() {
+  const [currentExample, setCurrentExample] = useState(0);
+  const [displayText, setDisplayText] = useState("");
+  const [isTyping, setIsTyping] = useState(true);
+
+  const examples = [
+    "What are the noise ordinance rules in my city?",
+    "Can I build a fence on my property boundary?",
+    "What permits do I need for a home business?",
+    "Are there parking restrictions downtown?",
+    "How do I report a code violation?",
+  ];
+
+  useEffect(() => {
+    const typeText = async () => {
+      const currentText = examples[currentExample];
+      setDisplayText("");
+      setIsTyping(true);
+
+      // Type out the text
+      for (let i = 0; i <= currentText.length; i++) {
+        setDisplayText(currentText.slice(0, i));
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+
+      setIsTyping(false);
+      
+      // Wait before moving to next example
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Clear text
+      for (let i = currentText.length; i >= 0; i--) {
+        setDisplayText(currentText.slice(0, i));
+        await new Promise(resolve => setTimeout(resolve, 30));
+      }
+
+      setCurrentExample((prev) => (prev + 1) % examples.length);
+    };
+
+    typeText();
+  }, [currentExample]);
+
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)]">
       {/* Hero Section */}
@@ -39,7 +82,7 @@ export default function Home() {
 
         <div className="relative z-10 container mx-auto px-4 md:px-6 py-16 md:py-24 lg:py-32 min-h-[calc(100vh-8rem)] flex items-center">
           <div className="max-w-4xl mx-auto text-center space-y-8">
-            <div className="space-y-4">
+            <div className="space-y-4 animate-in slide-in-from-bottom-8 duration-1000">
               <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl/none">
                 Understand Your Local Laws
                 <br />
@@ -51,31 +94,68 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild size="lg" className="min-w-[200px] h-12">
-                <Link href="/dashboard">
-                  Get Started <ArrowRight className="ml-2 h-4 w-4" />
+            <div className="flex flex-col sm:flex-row gap-4 justify-center animate-in slide-in-from-bottom-8 duration-1000 delay-200">
+              <Button asChild size="lg" className="min-w-[200px] h-12 group">
+                <Link href="/auth/signin">
+                  Get Started <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
               <Button
                 variant="outline"
                 size="lg"
                 asChild
-                className="min-w-[200px] h-12"
+                className="min-w-[200px] h-12 group"
               >
-                <Link href="/about">Learn More</Link>
+                <Link href="/about">
+                  Learn More
+                </Link>
               </Button>
             </div>
 
-            {/* Quick Demo */}
-            <div className="mt-12 p-1 bg-background/20 backdrop-blur-sm rounded-lg border">
-              <div className="bg-background/90 rounded-md p-6 space-y-4">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <MapPin className="h-4 w-4" />
-                  <span>
-                    Try asking: &quot; What are the noise ordinance rules in my
-                    city?&quot;
-                  </span>
+            {/* Interactive Demo */}
+            <div className="mt-12 animate-in slide-in-from-bottom-8 duration-1000 delay-400">
+              <div className="p-1 bg-background/20 backdrop-blur-sm rounded-lg border">
+                <div className="bg-background/90 rounded-md p-6 space-y-4">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+                    <MapPin className="h-4 w-4" />
+                    <span className="font-medium">Try asking:</span>
+                  </div>
+                  
+                  {/* Mock Search Interface */}
+                  <div className="space-y-3">
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Your location..."
+                          className="pl-10 bg-background/50"
+                          readOnly
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          value={displayText}
+                          className="pl-10 bg-background/50"
+                          placeholder="Ask about local laws..."
+                          readOnly
+                        />
+                        {isTyping && (
+                          <div className="absolute right-3 top-3 w-2 h-5 bg-primary animate-pulse" />
+                        )}
+                      </div>
+                      <Button size="default" disabled>
+                        <Search className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <p className="text-xs text-muted-foreground text-center">
+                    Sign up to start asking real questions about your local laws
+                  </p>
                 </div>
               </div>
             </div>
@@ -86,7 +166,7 @@ export default function Home() {
       {/* Features Section */}
       <section className="py-16 md:py-24 bg-muted/30">
         <div className="container mx-auto px-4 md:px-6">
-          <div className="text-center space-y-4 mb-12">
+          <div className="text-center space-y-4 mb-12 animate-in slide-in-from-bottom-6 duration-1000">
             <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">
               How LocalGov.AI Works
             </h2>
@@ -96,22 +176,22 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            <Card className="text-center border-0 shadow-sm bg-background/50">
+            <Card className="text-center border-0 shadow-sm bg-background/50 group hover:shadow-md transition-all duration-300 animate-in slide-in-from-bottom-6 duration-1000 delay-100">
               <CardHeader>
-                <div className="mx-auto w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                <div className="mx-auto w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                   <MapPin className="h-6 w-6 text-primary" />
                 </div>
-                <CardTitle>Choose Your Location</CardTitle>
+                <CardTitle>Enter Your Location</CardTitle>
                 <CardDescription>
-                  Select your city or state to get location-specific legal
+                  Enter any city, state, or address to get location-specific legal
                   information
                 </CardDescription>
               </CardHeader>
             </Card>
 
-            <Card className="text-center border-0 shadow-sm bg-background/50">
+            <Card className="text-center border-0 shadow-sm bg-background/50 group hover:shadow-md transition-all duration-300 animate-in slide-in-from-bottom-6 duration-1000 delay-200">
               <CardHeader>
-                <div className="mx-auto w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                <div className="mx-auto w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                   <Search className="h-6 w-6 text-primary" />
                 </div>
                 <CardTitle>Ask Your Question</CardTitle>
@@ -122,15 +202,15 @@ export default function Home() {
               </CardHeader>
             </Card>
 
-            <Card className="text-center border-0 shadow-sm bg-background/50">
+            <Card className="text-center border-0 shadow-sm bg-background/50 group hover:shadow-md transition-all duration-300 animate-in slide-in-from-bottom-6 duration-1000 delay-300">
               <CardHeader>
-                <div className="mx-auto w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                <div className="mx-auto w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                   <BookOpen className="h-6 w-6 text-primary" />
                 </div>
                 <CardTitle>Get Clear Answers</CardTitle>
                 <CardDescription>
                   Receive AI-powered explanations in plain English with proper
-                  citations
+                  citations and disclaimers
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -141,7 +221,7 @@ export default function Home() {
       {/* CTA Section */}
       <section className="py-16 md:py-24">
         <div className="container mx-auto px-4 md:px-6">
-          <div className="max-w-3xl mx-auto text-center space-y-8">
+          <div className="max-w-3xl mx-auto text-center space-y-8 animate-in slide-in-from-bottom-6 duration-1000">
             <div className="space-y-4">
               <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">
                 Start Understanding Your Local Laws Today
@@ -157,9 +237,9 @@ export default function Home() {
               <span>Free to use • No legal advice disclaimer applies</span>
             </div>
 
-            <Button asChild size="lg" className="min-w-[250px] h-12">
-              <Link href="/auth">
-                Create Free Account <ArrowRight className="ml-2 h-4 w-4" />
+            <Button asChild size="lg" className="min-w-[250px] h-12 group">
+              <Link href="/auth/signup">
+                Create Free Account <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Link>
             </Button>
           </div>

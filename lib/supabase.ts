@@ -9,12 +9,31 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     detectSessionInUrl: true,
     flowType: 'pkce',
-  },
-  cookies: {
-    name: 'sb-auth-token',
-    lifetime: 60 * 60 * 24 * 7, // 7 days
-    domain: process.env.NODE_ENV === 'production' ? '.yourdomain.com' : 'localhost',
-    path: '/',
-    sameSite: 'lax',
-  },
+    storage: {
+      getItem: (key: string) => {
+        if (typeof window === 'undefined') return null
+        try {
+          return window.localStorage.getItem(key)
+        } catch {
+          return null
+        }
+      },
+      setItem: (key: string, value: string) => {
+        if (typeof window === 'undefined') return
+        try {
+          window.localStorage.setItem(key, value)
+        } catch {
+          // Handle storage errors gracefully
+        }
+      },
+      removeItem: (key: string) => {
+        if (typeof window === 'undefined') return
+        try {
+          window.localStorage.removeItem(key)
+        } catch {
+          // Handle storage errors gracefully
+        }
+      },
+    },
+  }
 })

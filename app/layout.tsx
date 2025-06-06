@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/toaster'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
+import { PageTransition } from '@/components/page-transition'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -29,7 +30,11 @@ export default function RootLayout({
         >
           <div className="flex min-h-screen flex-col">
             <Header />
-            <main className="flex-1">{children}</main>
+            <main className="flex-1">
+              <PageTransition>
+                {children}
+              </PageTransition>
+            </main>
             <Footer />
           </div>
           <Toaster />

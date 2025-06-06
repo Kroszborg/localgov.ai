@@ -1,15 +1,17 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { supabase } from "@/lib/supabase"
 import { Menu, X } from "lucide-react"
+import { motion } from "framer-motion"
 
 export function Header() {
   const pathname = usePathname()
+  const router = useRouter()
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -25,6 +27,7 @@ export function Header() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null)
+      setLoading(false)
     })
 
     return () => subscription.unsubscribe()
@@ -33,13 +36,27 @@ export function Header() {
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     setMobileMenuOpen(false)
+    router.push('/')
   }
+
+  const isAuthPage = pathname.startsWith('/auth/')
   
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <motion.header 
+      className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
         <Link href="/" className="flex items-center space-x-2">
-          <span className="text-xl font-bold tracking-tight">LocalGov.AI</span>
+          <motion.span 
+            className="text-xl font-bold tracking-tight"
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+          >
+            LocalGov.AI
+          </motion.span>
         </Link>
         
         {/* Desktop Navigation */}
@@ -52,7 +69,7 @@ export function Header() {
           >
             About
           </Link>
-          {user && (
+          {user && !isAuthPage && (
             <Link 
               href="/dashboard" 
               className={`text-sm font-medium transition-colors hover:text-primary ${
@@ -66,18 +83,29 @@ export function Header() {
           <div className="flex items-center gap-2">
             {!loading && (
               user ? (
-                <Button onClick={handleSignOut} variant="outline" size="sm">
-                  Sign Out
-                </Button>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Button onClick={handleSignOut} variant="outline" size="sm">
+                    Sign Out
+                  </Button>
+                </motion.div>
               ) : (
-                <div className="flex items-center gap-2">
+                <motion.div 
+                  className="flex items-center gap-2"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.2 }}
+                >
                   <Button asChild variant="ghost" size="sm">
                     <Link href="/auth/signin">Sign In</Link>
                   </Button>
                   <Button asChild variant="default" size="sm">
                     <Link href="/auth/signup">Sign Up</Link>
                   </Button>
-                </div>
+                </motion.div>
               )
             )}
             <ThemeToggle />
@@ -99,7 +127,13 @@ export function Header() {
 
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t bg-background/95 backdrop-blur">
+        <motion.div 
+          className="md:hidden border-t bg-background/95 backdrop-blur"
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.2 }}
+        >
           <nav className="container mx-auto px-4 py-4 space-y-4">
             <Link 
               href="/about" 
@@ -110,7 +144,7 @@ export function Header() {
             >
               About
             </Link>
-            {user && (
+            {user && !isAuthPage && (
               <Link 
                 href="/dashboard" 
                 className={`block text-sm font-medium transition-colors hover:text-primary ${
@@ -141,8 +175,8 @@ export function Header() {
               )}
             </div>
           </nav>
-        </div>
+        </motion.div>
       )}
-    </header>
+    </motion.header>
   )
 }
