@@ -7,6 +7,7 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { PageTransition } from "@/components/page-transition";
 import Head from "next/head";
+import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,7 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <Head>
-        <title>LocalGov.AI - Understand Local Laws in Plain English</title>
+        <title>LocalGov - Understand Local Laws in Plain English</title>
         <meta
           name="description"
           content="Get clear, AI-powered explanations of local government laws and policies. No legal jargon, just straightforward answers."
@@ -70,7 +71,10 @@ export default function RootLayout({
           <div className="flex min-h-screen flex-col">
             <Header />
             <main className="flex-1">
-              <PageTransition>{children}</PageTransition>
+              <PageTransition>
+                {children}
+                <Analytics />
+              </PageTransition>
             </main>
             <Footer />
           </div>
