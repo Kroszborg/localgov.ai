@@ -121,6 +121,7 @@ const locationSuggestions = [
 ];
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [searchHistory, setSearchHistory] = useState<SearchHistory[]>([]);
@@ -178,7 +179,7 @@ export default function DashboardPage() {
       } = await supabase.auth.getSession();
 
       if (error || !session?.user) {
-        window.location.replace("/auth/signin");
+        router.push("/auth/signin");
         return;
       }
 
@@ -208,13 +209,13 @@ export default function DashboardPage() {
           data: { subscription },
         } = supabase.auth.onAuthStateChange((event, session) => {
           if (event === "SIGNED_OUT" || !session) {
-            window.location.replace("/auth/signin");
+            router.push("/auth/signin");
           }
         });
         authListener.current = subscription;
       }
     } catch (error) {
-      window.location.replace("/auth/signin");
+      router.push("/auth/signin");
     }
   }
 

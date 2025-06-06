@@ -31,35 +31,37 @@ export default function SignUpPage() {
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
-    const checkUser = async () => {
+    const checkSession = async () => {
       try {
         const {
           data: { session },
         } = await supabase.auth.getSession();
 
         if (session?.user) {
-          router.replace("/dashboard");
+          router.push("/dashboard");
           return;
         }
       } catch (error) {
-        console.error("Error checking session:", error);
+        console.error("Session check error:", error);
       } finally {
         setCheckingAuth(false);
       }
     };
 
-    checkUser();
+    checkSession();
 
-    // Listen for auth state changes
+    // Set up auth state change listener
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "SIGNED_IN" && session?.user) {
-        router.replace("/dashboard");
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session) {
+        router.push("/dashboard");
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [router]);
 
   const validatePassword = (password: string) => {
@@ -118,7 +120,7 @@ export default function SignUpPage() {
       } else if (data.user) {
         if (data.user.email_confirmed_at) {
           // User is immediately confirmed, redirect to dashboard
-          router.replace("/dashboard");
+          router.push("/dashboard");
         } else {
           // Email confirmation required
           setMessage(

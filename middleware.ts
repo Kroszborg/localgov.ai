@@ -1,6 +1,7 @@
 // middleware.ts - TEMPORARY DISABLE
 // Comment out or replace your middleware.ts with this temporarily
 
+import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
@@ -10,7 +11,32 @@ const RATE_LIMIT = 30; // max 30 requests
 const WINDOW_MS = 60 * 1000; // per minute
 
 export async function middleware(req: NextRequest) {
+  const res = NextResponse.next();
+  const supabase = createMiddlewareClient({ req, res });
   const { pathname } = req.nextUrl;
+
+  // Refresh session if expired
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  // Protected routes
+  const protectedRoutes = ['/dashboard', '/settings'];
+  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+  const isAuthRoute = pathname.startsWith('/auth/');
+
+  // If user is not signed in and trying to access a protected route
+  if (isProtectedRoute && !session) {
+    const redirectUrl = new URL('/auth/signin', req.url);
+    redirectUrl.searchParams.set('redirectedFrom', pathname);
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  // If user is signed in and trying to access auth routes
+  if (isAuthRoute && session) {
+    const redirectUrl = new URL('/dashboard', req.url);
+    return NextResponse.redirect(redirectUrl);
+  }
 
   // Block admin and private API
   if (pathname.startsWith('/admin') || pathname.startsWith('/api/private')) {
@@ -32,14 +58,13 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  return res;
 }
 
 export const config = {
   matcher: [
-    // Only match a few specific paths to minimize interference
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.gif|.*\\.svg|api).*)',
-    '/api/:path*',
-    '/admin/:path*',
+    '/dashboard/:path*',
+    '/settings/:path*',
+    '/auth/:path*',
   ],
 }

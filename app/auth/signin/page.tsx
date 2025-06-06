@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import { motion } from "framer-motion";
 
 export default function SignInPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,33 +28,26 @@ export default function SignInPage() {
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
-    // Clear any existing sessions first
-    const clearAndCheck = async () => {
+    const checkSession = async () => {
       try {
-        // Clear any existing session
-        await supabase.auth.signOut();
-
-        // Wait a moment for cleanup
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        // Check if there's actually a valid session
         const {
           data: { session },
         } = await supabase.auth.getSession();
 
-        if (session?.user && session.access_token) {
-          window.location.replace("/dashboard");
+        if (session?.user) {
+          const redirectTo = searchParams.get("redirectedFrom") || "/dashboard";
+          router.push(redirectTo);
           return;
         }
       } catch (error) {
-        // Silently handle auth errors
+        console.error("Session check error:", error);
       } finally {
         setCheckingAuth(false);
       }
     };
 
-    clearAndCheck();
-  }, []);
+    checkSession();
+  }, [router, searchParams]);
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,9 +55,6 @@ export default function SignInPage() {
     setError(null);
 
     try {
-      // Clear any existing session first
-      await supabase.auth.signOut();
-
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password: password.trim(),
@@ -84,8 +75,9 @@ export default function SignInPage() {
         return;
       }
 
-      if (data.session?.user && data.session.access_token) {
-        window.location.replace("/dashboard");
+      if (data.session?.user) {
+        const redirectTo = searchParams.get("redirectedFrom") || "/dashboard";
+        router.push(redirectTo);
       } else {
         setError("Authentication failed. Please try again.");
       }
