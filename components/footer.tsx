@@ -60,20 +60,27 @@ export function Footer() {
                 whileHover={{ scale: 1.1 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
-                <Image
-                  src="/black_circle_360x360.png"
-                  alt="Powered by Bolt"
-                  width={20}
-                  height={20}
-                  className="dark:hidden transition-opacity duration-200"
-                />
-                <Image
-                  src="/white_circle_360x360.png"
-                  alt="Powered by Bolt"
-                  width={20}
-                  height={20}
-                  className="hidden dark:block transition-opacity duration-200"
-                />
+                <a
+                  href="https://bolt.new/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center"
+                >
+                  <Image
+                    src="/black_circle_360x360.png"
+                    alt="Powered by Bolt"
+                    width={20}
+                    height={20}
+                    className="dark:hidden transition-opacity duration-200"
+                  />
+                  <Image
+                    src="/white_circle_360x360.png"
+                    alt="Powered by Bolt"
+                    width={20}
+                    height={20}
+                    className="hidden dark:block transition-opacity duration-200"
+                  />
+                </a>
                 <span className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors duration-200">
                   Bolt
                 </span>

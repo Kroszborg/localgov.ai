@@ -152,7 +152,7 @@ export function Header() {
             </motion.div>
           )}
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <ThemeToggle />
 
             {!loading &&
@@ -236,6 +236,25 @@ export function Header() {
                   </motion.div>
                 </motion.div>
               ))}
+
+            {/* Bolt.new badge */}
+            <a
+              href="https://bolt.new/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-2 flex items-center"
+            >
+              <img
+                src="/black_circle_360x360.png"
+                alt="Built with Bolt.new"
+                className="w-8 h-8 dark:hidden"
+              />
+              <img
+                src="/white_circle_360x360.png"
+                alt="Built with Bolt.new"
+                className="w-8 h-8 hidden dark:block"
+              />
+            </a>
           </div>
         </nav>
 
