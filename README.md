@@ -1,94 +1,394 @@
-# LocalGov.ai
+# LocalGov.AI
 
-## Overview
-LocalGov.ai is a new application built primarily with [Bolt.new](https://bolt.new/), designed to [briefly describe your app's purpose and features].
+> 🏛️ **AI-Powered Local Government Law Interpreter** - Understanding local laws in plain English, built with [Bolt.new](https://bolt.new/)
+
+**🚀 [Live Demo](https://localgov.kroszborg.co/)** | **⚡ [Built with Bolt.new](https://bolt.new/)**
+
+[![Built with Bolt.new](https://img.shields.io/badge/Built%20with-Bolt.new-blue?style=flat&logo=bolt)](https://bolt.new/)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-green?style=flat&logo=vercel)](https://localgov.kroszborg.co/)
+[![Next.js](https://img.shields.io/badge/Next.js-14.1.0-black?style=flat&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-blue?style=flat&logo=typescript)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.3.3-38B2AC?style=flat&logo=tailwind-css)](https://tailwindcss.com/)
+
+---
+
+## 🌟 Overview
+
+LocalGov.AI is an innovative AI-powered platform that democratizes access to local government information by translating complex legal language into clear, understandable explanations. Citizens can ask questions about local laws, ordinances, and policies in natural language and receive instant, accurate responses.
+
+**🌐 Try it now:** [localgov.kroszborg.co](https://localgov.kroszborg.co/)
+
+**🎯 Problem Solved:** Local government laws and regulations are often written in complex legal jargon that's difficult for average citizens to understand. LocalGov.AI bridges this gap by providing clear, AI-powered explanations of local policies.
 
 ---
 
 ## 🚀 Built with Bolt.new
 
-This project was started and developed using [Bolt.new](https://bolt.new/), showcasing Bolt's capabilities as the primary platform. All core functionality and the final user experience run within the Bolt environment, in accordance with the hackathon requirements.
+This project was developed using [Bolt.new](https://bolt.new/), showcasing the platform's capabilities for rapid full-stack development. All core functionality runs within the Bolt environment, demonstrating modern web development practices and AI integration.
 
-### Bolt.new Badge Requirement
+### 🏆 Bolt.new Hackathon Compliance
 
-All submissions must include a visible Bolt.new badge on the publicly deployed version of your project. This badge confirms your project was built with Bolt.new.
+- ✅ **Primary Development Platform:** Built entirely with Bolt.new
+- ✅ **Bolt.new Badge:** Prominently displayed on homepage with proper linking
+- ✅ **Full-Stack Implementation:** Complete Next.js application with authentication
+- ✅ **Production Ready:** Deployed and publicly accessible at [localgov.kroszborg.co](https://localgov.kroszborg.co/)
+- ✅ **Live Demo:** Fully functional application ready for testing
 
-**Guidelines:**
-- **Mandatory Inclusion:** The Bolt.new badge must be displayed on the main home page of your deployed project.
-- **Visibility:** The badge must be clearly visible to the public.
-- **Placement:** Recommended in the top right or bottom right corner, but use your best judgement for your project's branding.
-- **Sizing:** The badge should be scalable and responsive to different screen sizes.
-- **Hyperlink:** The badge must hyperlink to [https://bolt.new/](https://bolt.new/).
-- **Badge Variations:**
-  - **White Circle:** Use on dark backgrounds for visibility (`/public/white_circle_360x360.png`).
-  - **Black Circle:** Use on light backgrounds for visibility (`/public/black_circle_360x360.png`).
-  - **Text Only:** Use on dark backgrounds if preferred (`/public/logotext_poweredby_360w.png`).
+---
 
-**Example Implementation:**
+## ✨ Key Features
+
+### 🔍 **AI-Powered Legal Search**
+- Natural language query processing
+- Location-specific legal information
+- Real-time AI responses using OpenAI GPT-4
+- Comprehensive legal disclaimers and source citations
+
+### 🗺️ **Smart Location Detection**
+- Autocomplete for 500+ cities worldwide
+- Location-specific ordinance lookup
+- Support for international jurisdictions
+- Intelligent city/state/country recognition
+
+### 👤 **User Management & Personalization**
+- Secure authentication with Supabase
+- Personal search history tracking
+- Bookmark system for important responses
+- Account settings and data management
+
+### 🎨 **Modern User Experience**
+- Responsive design with Tailwind CSS
+- Dark/light theme support
+- Smooth animations with Framer Motion
+- Mobile-first design approach
+- Accessibility-compliant interface
+
+### 🔒 **Security & Privacy**
+- PKCE-based authentication flow
+- Rate limiting on API endpoints
+- Secure password requirements
+- GDPR-compliant data handling
+- Content Security Policy implementation
+
+---
+
+## 🛠️ Technology Stack
+
+### **Frontend**
+- **Framework:** Next.js 14.1.0 with App Router
+- **Language:** TypeScript 5.8.3
+- **Styling:** Tailwind CSS 3.3.3 with custom design system
+- **UI Components:** Radix UI + shadcn/ui
+- **Animations:** Framer Motion
+- **Icons:** Lucide React
+
+### **Backend & Infrastructure**
+- **Authentication:** Supabase Auth with PKCE flow
+- **Database:** Supabase PostgreSQL
+- **AI Integration:** OpenAI GPT-4 API
+- **Deployment:** Vercel with Analytics
+- **Middleware:** Custom rate limiting and security
+
+### **Development Tools**
+- **Build System:** Next.js with SWC compiler
+- **Code Quality:** ESLint + TypeScript strict mode
+- **Styling:** PostCSS with Tailwind CSS
+- **Package Manager:** npm
+
+---
+
+## 🏗️ Project Structure
+
+```
+localgov-ai/
+├── app/                    # Next.js App Router
+│   ├── api/               # API routes
+│   │   ├── search/        # AI search endpoint
+│   │   ├── delete-account/# Account management
+│   │   └── auth/          # Authentication callbacks
+│   ├── auth/              # Authentication pages
+│   ├── dashboard/         # User dashboard
+│   ├── about/             # About page
+│   ├── privacy/           # Privacy policy
+│   ├── terms/             # Terms of service
+│   └── settings/          # User settings
+├── components/            # Reusable UI components
+│   ├── ui/               # shadcn/ui components
+│   ├── header.tsx        # Navigation header
+│   ├── footer.tsx        # Site footer
+│   └── theme-provider.tsx# Theme management
+├── lib/                  # Utility libraries
+│   ├── supabase.ts       # Supabase client
+│   └── utils.ts          # Utility functions
+├── hooks/                # Custom React hooks
+├── public/               # Static assets
+│   ├── *_circle_360x360.png # Bolt.new badges
+│   └── *.jpeg            # Background images
+└── middleware.ts         # Request middleware
+```
+
+---
+
+## 🎨 Design System
+
+### **Color Palette**
+- **Primary:** Neutral black/white with smart contrast
+- **Secondary:** Muted grays for subtle elements
+- **Accent:** Primary color for interactive elements
+- **Semantic:** Green (success), Red (destructive), Amber (warning)
+
+### **Typography**
+- **Font Family:** Satoshi (custom) with Inter fallback
+- **Hierarchy:** Clear heading/body text distinction
+- **Responsive:** Scales appropriately across devices
+
+### **Components**
+- **Cards:** Elevated surfaces for content organization
+- **Buttons:** Multiple variants (default, outline, ghost, destructive)
+- **Forms:** Accessible inputs with proper validation
+- **Navigation:** Responsive header with mobile menu
+
+---
+
+## 🚀 Getting Started
+
+### **Prerequisites**
+- Node.js 18+ and npm
+- Supabase account with project setup
+- OpenAI API key
+
+### **Environment Setup**
+Create a `.env.local` file with:
+```bash
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+# OpenAI Configuration
+OPENAI_API_KEY=your_openai_api_key
+```
+
+### **Installation & Development**
+```bash
+# Clone and install dependencies
+npm install
+
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Start production server
+npm start
+```
+
+### **Database Setup**
+Required Supabase tables:
+```sql
+-- Search history table
+CREATE TABLE search_history (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  query TEXT NOT NULL,
+  location TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Bookmarks table
+CREATE TABLE bookmarks (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  query TEXT NOT NULL,
+  location TEXT NOT NULL,
+  content TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+---
+
+## 🎯 User Journey
+
+### **New User Experience**
+1. **Landing Page:** Compelling hero with demo interface
+2. **Sign Up:** Simple email/password registration
+3. **Onboarding:** Immediate access to search functionality
+4. **First Search:** Location input + question → AI response
+5. **Discovery:** Explore bookmarks, history, and settings
+
+### **Returning User Experience**
+1. **Dashboard:** Personal search history and bookmarks
+2. **Quick Search:** Streamlined interface with autocomplete
+3. **Management:** Easy access to saved content and settings
+
+---
+
+## 🏆 Hackathon Highlights
+
+### **Technical Excellence**
+- **Modern Stack:** Latest Next.js with TypeScript and advanced React patterns
+- **AI Integration:** Sophisticated OpenAI GPT-4 implementation with context awareness
+- **Database Design:** Efficient Supabase schema with proper relationships
+- **Security:** Industry-standard authentication and data protection
+
+### **User Experience**
+- **Intuitive Design:** Clean, accessible interface that anyone can use
+- **Performance:** Optimized loading, caching, and smooth animations
+- **Responsiveness:** Seamless experience across all device sizes
+- **Accessibility:** WCAG compliance with proper semantic markup
+
+### **Innovation & Impact**
+- **Real-World Problem:** Addresses genuine civic engagement challenges
+- **Scalable Solution:** Architecture supports growth to thousands of cities
+- **Community Value:** Empowers citizens with legal knowledge access
+- **Future Potential:** Foundation for broader civic tech initiatives
+
+---
+
+## 📊 Features in Detail
+
+### **AI Search Engine**
+- **Context Awareness:** Understands location-specific legal frameworks
+- **Source Attribution:** Provides general source guidance
+- **Disclaimer Integration:** Automatic legal disclaimers on responses
+- **Query Optimization:** Processes natural language effectively
+
+### **User Account System**
+- **Secure Authentication:** Supabase Auth with email verification
+- **Data Persistence:** Search history and bookmarks saved
+- **Privacy Controls:** Account deletion and data export options
+- **Profile Management:** User preferences and settings
+
+### **Search Management**
+- **History Tracking:** Automatic search history with timestamps
+- **Bookmark System:** Save and organize important responses
+- **Quick Access:** Recently searched items for easy reference
+- **Data Export:** Copy responses and search again functionality
+
+---
+
+## 🔒 Security & Privacy
+
+### **Data Protection**
+- **Encryption:** All data encrypted in transit and at rest
+- **Authentication:** Secure JWT-based session management
+- **Rate Limiting:** API protection against abuse
+- **Content Security:** CSP headers and XSS protection
+
+### **Privacy Compliance**
+- **GDPR Ready:** Right to access, rectify, and delete data
+- **Transparent Policies:** Clear privacy policy and terms of service
+- **Minimal Data:** Only collect essential information
+- **User Control:** Account deletion and data portability
+
+---
+
+## 🌐 Deployment & Performance
+
+### **Production Environment**
+- **Platform:** Vercel with edge functions
+- **Live URL:** [localgov.kroszborg.co](https://localgov.kroszborg.co/)
+- **Analytics:** Vercel Analytics for performance monitoring
+- **CDN:** Global edge distribution for fast loading
+- **Monitoring:** Error tracking and performance metrics
+
+### **Performance Optimizations**
+- **Image Optimization:** Next.js automatic image optimization
+- **Code Splitting:** Automatic route-based code splitting
+- **Caching:** Strategic caching for API responses
+- **Bundle Analysis:** Optimized JavaScript bundle sizes
+
+---
+
+## 🎨 Badge Assets
+
+The project includes required Bolt.new badges in multiple formats:
+
+- **White Circle:** `/public/white_circle_360x360.png` (for dark backgrounds)
+- **Black Circle:** `/public/black_circle_360x360.png` (for light backgrounds)  
+- **Text Logo:** `/public/logotext_poweredby_360w.png` (text-based variant)
+
+**Implementation Example:**
 ```jsx
 <a href="https://bolt.new/" target="_blank" rel="noopener noreferrer">
-  <img src="/public/white_circle_360x360.png" alt="Built with Bolt.new" style={{ width: 64, height: 64 }} />
+  <img 
+    src="/black_circle_360x360.png" 
+    alt="Built with Bolt.new" 
+    className="w-8 h-8 dark:hidden" 
+  />
+  <img 
+    src="/white_circle_360x360.png" 
+    alt="Built with Bolt.new" 
+    className="w-8 h-8 hidden dark:block" 
+  />
 </a>
 ```
-_Choose the badge variant that best fits your UI and background._
 
 ---
 
-## Hackathon Submission Requirements Checklist
+## 📝 Legal & Compliance
 
-- [x] **Project built with Bolt.new** (core functionality and experience run within Bolt)
-- [x] **Bolt.new badge** visibly included on the main home page, hyperlinked to [https://bolt.new/](https://bolt.new/)
-- [x] **Publicly accessible URL** to the deployed project
-- [x] **Bolt.new project URL** (must start with `https://bolt.new/~/…`)
-- [x] **Text description** explaining features, functionality, and challenge/bonus eligibility
-- [x] **Demonstration video** (≤ 3 minutes, uploaded to YouTube, showing the project in action)
-- [x] **Geographical region** selected for regional prize eligibility
-- [x] **Testing access** provided (no login required, or credentials included if private)
-- [x] **All materials in English** (or English translation provided)
-- [x] **Original work** (no IP violations, all third-party integrations properly licensed)
+### **Disclaimers**
+- All responses include appropriate legal disclaimers
+- Clear messaging that content is for informational purposes only
+- Encouragement to verify information with official sources
+- Prominent "not legal advice" notices throughout the application
 
----
-
-## Judging Criteria
-
-Submissions will be evaluated based on:
-- **Potential Impact:** How meaningful is the problem and how well does the project solve it?
-- **Quality of the Idea:** Creativity, uniqueness, and innovation
-- **Technological Implementation:** Quality of software development and use of Bolt.new
-- **Design:** User experience, UI/UX, and balance of frontend/backend
+### **Terms & Privacy**
+- Comprehensive Terms of Service with user responsibilities
+- Detailed Privacy Policy explaining data collection and usage
+- GDPR-compliant data handling procedures
+- Clear consent mechanisms for data processing
 
 ---
 
-## Challenge & Bonus Prizes
+## 🚀 Future Roadmap
 
-If you are submitting for a Challenge or Bonus Prize, ensure you:
-- Clearly highlight how your project meets the requirements in your video and text description
-- Provide any required account IDs or links (e.g., RevenueCat, ElevenLabs, Netlify, Algorand, Reddit, etc.)
+### **Short Term**
+- [ ] Multi-language support for international users
+- [ ] Advanced search filters and sorting options
+- [ ] Email notifications for bookmarked content updates
+- [ ] Integration with more government data sources
 
----
-
-## Intellectual Property & Legal
-- All work must be original and owned by the entrant/team.
-- No financial or preferential support from the Sponsor or Administrator prior to the hackathon.
-- Comply with all open source and third-party licenses.
-
----
-
-## Contact & Support
-For questions, see the [Devpost Hackathon Rules](https://info.devpost.com/terms) or email support@devpost.com.
+### **Long Term**
+- [ ] Mobile app development (React Native)
+- [ ] Real-time notifications for law changes
+- [ ] Community features for shared bookmarks
+- [ ] API for third-party integrations
+- [ ] Advanced analytics and insights
 
 ---
 
-## License
-[Include your project's license here]
+## 🤝 Contributing
+
+This project was built for the Bolt.new hackathon and showcases modern web development practices. While originally developed as a submission, the codebase demonstrates:
+
+- **Clean Architecture:** Well-organized, maintainable code structure
+- **Best Practices:** TypeScript, proper error handling, security measures
+- **Scalable Design:** Patterns that support growth and feature additions
+- **Documentation:** Comprehensive comments and type definitions
 
 ---
 
-## Badge Assets
-- `/public/logotext_poweredby_360w.png` (Text Only, white)
-- `/public/white_circle_360x360.png` (White Circle)
-- `/public/black_circle_360x360.png` (Black Circle)
+## 📄 License
+
+This project is developed for the Bolt.new hackathon. All third-party integrations are properly licensed, and the codebase follows open source best practices.
 
 ---
 
-_This project is proudly built with [Bolt.new](https://bolt.new/)!_
+## 🙏 Acknowledgments
+
+- **[Bolt.new](https://bolt.new/)** - For providing an exceptional development platform that enabled rapid full-stack development
+- **OpenAI** - For GPT-4 API that powers the intelligent legal explanations
+- **Supabase** - For robust authentication and database infrastructure
+- **Vercel** - For seamless deployment and performance optimization
+- **shadcn/ui** - For beautiful, accessible UI components
+
+---
+
+**Built with ❤️ using [Bolt.new](https://bolt.new/)**
+
+*This project demonstrates the power of modern web development tools in creating meaningful civic technology solutions.*
