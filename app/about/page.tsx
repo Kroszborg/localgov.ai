@@ -162,25 +162,6 @@ export default function AboutPage() {
               </div>
             </div>
           </div>
-          {/* Contact Section */}
-          <div className="space-y-4 w-full">
-            <h2 className="text-2xl font-semibold flex items-center gap-2">
-              <Mail className="w-6 h-6 text-primary" />
-              Contact Us
-            </h2>
-            <p className="text-muted-foreground w-full">
-              Have questions or feedback? Reach out to us at
-              <a
-                href="mailto:support@localgov.ai"
-                className="text-primary underline ml-1"
-              >
-                support@localgov.ai
-              </a>
-            </p>
-            <Button asChild className="w-full sm:w-auto">
-              <Link href="/contact">Get in Touch</Link>
-            </Button>
-          </div>
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -144,34 +144,7 @@ export default function DashboardPage() {
   const authChecked = useRef(false);
   const authListener = useRef<any>(null);
 
-  useEffect(() => {
-    if (authChecked.current) return;
-    authChecked.current = true;
-    checkUserOnce();
-
-    return () => {
-      if (authListener.current) {
-        authListener.current.unsubscribe();
-      }
-    };
-  }, []);
-
-  // Location autocomplete logic
-  useEffect(() => {
-    if (location.length >= 2) {
-      const filtered = locationSuggestions
-        .filter((loc) => loc.toLowerCase().includes(location.toLowerCase()))
-        .slice(0, 8); // Show max 8 suggestions
-
-      setFilteredLocations(filtered);
-      setShowLocationSuggestions(filtered.length > 0);
-    } else {
-      setShowLocationSuggestions(false);
-      setFilteredLocations([]);
-    }
-  }, [location]);
-
-  async function checkUserOnce() {
+  const checkUserOnce = useCallback(async () => {
     try {
       const {
         data: { session },
@@ -217,7 +190,34 @@ export default function DashboardPage() {
     } catch (error) {
       router.push("/auth/signin");
     }
-  }
+  }, [router]);
+
+  useEffect(() => {
+    if (authChecked.current) return;
+    authChecked.current = true;
+    checkUserOnce();
+
+    return () => {
+      if (authListener.current) {
+        authListener.current.unsubscribe();
+      }
+    };
+  }, [checkUserOnce]);
+
+  // Location autocomplete logic
+  useEffect(() => {
+    if (location.length >= 2) {
+      const filtered = locationSuggestions
+        .filter((loc) => loc.toLowerCase().includes(location.toLowerCase()))
+        .slice(0, 8); // Show max 8 suggestions
+
+      setFilteredLocations(filtered);
+      setShowLocationSuggestions(filtered.length > 0);
+    } else {
+      setShowLocationSuggestions(false);
+      setFilteredLocations([]);
+    }
+  }, [location]);
 
   const handleLocationSelect = (selectedLocation: string) => {
     setLocation(selectedLocation);

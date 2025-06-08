@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { supabase } from "@/lib/supabase";
-import { Menu, X, User, LogOut, Settings, Crown, BookOpen } from "lucide-react";
+import { Menu, X, User, LogOut, Settings, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   DropdownMenu,
@@ -16,7 +16,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
 
 export function Header() {
   const pathname = usePathname();
@@ -278,7 +277,7 @@ export function Header() {
         </div>
       </div>
 
-      {/* Mobile Navigation */}
+      {/* Mobile Navigation - Improved Design */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
@@ -288,7 +287,8 @@ export function Header() {
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
           >
-            <nav className="container mx-auto px-4 py-6 space-y-4">
+            <nav className="container mx-auto px-4 py-4 space-y-1">
+              {/* Navigation Links */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -296,10 +296,10 @@ export function Header() {
               >
                 <Link
                   href="/about"
-                  className={`flex items-center gap-3 text-base font-medium transition-colors hover:text-primary py-2 ${
+                  className={`flex items-center gap-3 text-base font-medium transition-colors hover:text-primary py-3 px-2 rounded-lg hover:bg-accent ${
                     pathname === "/about"
-                      ? "text-primary"
-                      : "text-muted-foreground"
+                      ? "text-primary bg-accent"
+                      : "text-foreground"
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -312,14 +312,14 @@ export function Header() {
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.2, duration: 0.3 }}
+                  transition={{ delay: 0.15, duration: 0.3 }}
                 >
                   <Link
                     href="/dashboard"
-                    className={`flex items-center gap-3 text-base font-medium transition-colors hover:text-primary py-2 ${
+                    className={`flex items-center gap-3 text-base font-medium transition-colors hover:text-primary py-3 px-2 rounded-lg hover:bg-accent ${
                       pathname === "/dashboard"
-                        ? "text-primary"
-                        : "text-muted-foreground"
+                        ? "text-primary bg-accent"
+                        : "text-foreground"
                     }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -329,24 +329,46 @@ export function Header() {
                 </motion.div>
               )}
 
-              <div className="pt-4 border-t space-y-3">
+              {user && (
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2, duration: 0.3 }}
+                >
+                  <Link
+                    href="/settings"
+                    className={`flex items-center gap-3 text-base font-medium transition-colors hover:text-primary py-3 px-2 rounded-lg hover:bg-accent ${
+                      pathname === "/settings"
+                        ? "text-primary bg-accent"
+                        : "text-foreground"
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Settings className="w-5 h-5" />
+                    Settings
+                  </Link>
+                </motion.div>
+              )}
+
+              {/* Auth Section */}
+              <div className="pt-3 border-t border-border/50">
                 {!loading &&
                   (user ? (
                     <motion.div
-                      className="space-y-3"
+                      className="space-y-2"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3, duration: 0.3 }}
+                      transition={{ delay: 0.25, duration: 0.3 }}
                     >
                       <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                        <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                          <User className="w-4 h-4" />
+                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                          <User className="w-5 h-5 text-primary" />
                         </div>
-                        <div>
-                          <div className="font-medium text-sm">
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-sm truncate">
                             {user.email?.split("@")[0]}
                           </div>
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-xs text-muted-foreground truncate">
                             {user.email}
                           </div>
                         </div>
@@ -355,7 +377,7 @@ export function Header() {
                         onClick={handleSignOut}
                         variant="outline"
                         size="sm"
-                        className="w-full justify-start gap-2"
+                        className="w-full justify-start gap-2 h-11"
                       >
                         <LogOut className="w-4 h-4" />
                         Sign Out
@@ -363,16 +385,16 @@ export function Header() {
                     </motion.div>
                   ) : (
                     <motion.div
-                      className="space-y-3"
+                      className="space-y-2"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3, duration: 0.3 }}
+                      transition={{ delay: 0.25, duration: 0.3 }}
                     >
                       <Button
                         asChild
                         variant="ghost"
                         size="sm"
-                        className="w-full justify-start"
+                        className="w-full justify-start h-11"
                       >
                         <Link
                           href="/auth/signin"
@@ -385,7 +407,7 @@ export function Header() {
                         asChild
                         variant="default"
                         size="sm"
-                        className="w-full"
+                        className="w-full h-11"
                       >
                         <Link
                           href="/auth/signup"

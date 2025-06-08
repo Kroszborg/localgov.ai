@@ -13,8 +13,8 @@ export function Footer() {
         {/* Main Footer Content */}
         <div className="flex flex-col md:flex-row h-auto md:h-16 items-center justify-between py-4 md:py-0 gap-4 md:gap-0">
           {/* Left Side - Copyright and Links */}
-          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-6 text-sm text-muted-foreground">
-            <span className="font-medium">
+          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-6 text-sm text-muted-foreground order-2 md:order-1">
+            <span className="font-medium text-center md:text-left">
               © {currentYear} LocalGov.AI. All rights reserved.
             </span>
             <div className="flex items-center gap-4 md:gap-6">
@@ -40,22 +40,21 @@ export function Footer() {
           </div>
 
           {/* Right Side - Branding and Status */}
-          <div className="flex items-center gap-4">
-            {/* Status Indicator */}
-            <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex flex-col md:flex-row items-center gap-3 md:gap-4 order-1 md:order-2">
+            {/* Status Indicator - Show on mobile too but smaller */}
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <motion.div
                 className="w-2 h-2 bg-green-500 rounded-full"
                 animate={{ opacity: [1, 0.5, 1] }}
                 transition={{ repeat: Infinity, duration: 2 }}
               />
-              <span>All systems operational</span>
+              <span className="hidden sm:inline">All systems operational</span>
+              <span className="sm:hidden">Online</span>
             </div>
 
-            {/* Powered by section with improved styling */}
+            {/* Powered by section with improved mobile styling */}
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground hidden md:inline">
-                Powered by
-              </span>
+              <span className="text-xs text-muted-foreground">Powered by</span>
               <motion.div
                 className="flex items-center space-x-2"
                 whileHover={{ scale: 1.1 }}
@@ -64,15 +63,15 @@ export function Footer() {
                 <Image
                   src="/black_circle_360x360.png"
                   alt="Powered by Bolt"
-                  width={24}
-                  height={24}
+                  width={20}
+                  height={20}
                   className="dark:hidden transition-opacity duration-200"
                 />
                 <Image
                   src="/white_circle_360x360.png"
                   alt="Powered by Bolt"
-                  width={24}
-                  height={24}
+                  width={20}
+                  height={20}
                   className="hidden dark:block transition-opacity duration-200"
                 />
                 <span className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors duration-200">
@@ -81,39 +80,6 @@ export function Footer() {
               </motion.div>
             </div>
           </div>
-        </div>
-
-        {/* Additional Footer Info removed for simplicity */}
-
-        {/* Mobile-only additional links */}
-        <div className="lg:hidden flex flex-wrap items-center justify-center gap-4 py-3 border-t border-border/50 text-xs text-muted-foreground">
-          <Link
-            href="/sitemap"
-            className="hover:text-primary transition-colors duration-200"
-          >
-            Sitemap
-          </Link>
-          <span>•</span>
-          <Link
-            href="/accessibility"
-            className="hover:text-primary transition-colors duration-200"
-          >
-            Accessibility
-          </Link>
-          <span>•</span>
-          <Link
-            href="/help"
-            className="hover:text-primary transition-colors duration-200"
-          >
-            Help Center
-          </Link>
-          <span>•</span>
-          <Link
-            href="/status"
-            className="hover:text-primary transition-colors duration-200"
-          >
-            Status
-          </Link>
         </div>
       </div>
     </footer>
