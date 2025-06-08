@@ -2,7 +2,7 @@
 
 > 🏛️ **AI-Powered Local Government Law Interpreter** - Understanding local laws in plain English, built with [Bolt.new](https://bolt.new/)
 
-**🚀 [Live Demo](https://localgov.kroszborg.co/)** | **⚡ [Built with Bolt.new](https://bolt.new/)**
+**🚀 [Live Demo](https://localgov.kroszborg.co/)** | **⚡ [Built with Bolt.new](https://bolt.new/~/sb1-qhracknh)**
 
 [![Built with Bolt.new](https://img.shields.io/badge/Built%20with-Bolt.new-blue?style=flat&logo=bolt)](https://bolt.new/)
 [![Live Demo](https://img.shields.io/badge/Live-Demo-green?style=flat&logo=vercel)](https://localgov.kroszborg.co/)
@@ -24,11 +24,14 @@ LocalGov.AI is an innovative AI-powered platform that democratizes access to loc
 
 ## 🚀 Built with Bolt.new
 
-This project was developed using [Bolt.new](https://bolt.new/), showcasing the platform's capabilities for rapid full-stack development. All core functionality runs within the Bolt environment, demonstrating modern web development practices and AI integration.
+This project was developed using [Bolt.new](https://bolt.new/~/sb1-qhracknh), showcasing the platform's capabilities for rapid full-stack development. All core functionality runs within the Bolt environment, demonstrating modern web development practices and AI integration.
+
+**🔗 Bolt.new Project:** [https://bolt.new/~/sb1-qhracknh](https://bolt.new/~/sb1-qhracknh)
 
 ### 🏆 Bolt.new Hackathon Compliance
 
 - ✅ **Primary Development Platform:** Built entirely with Bolt.new
+- ✅ **Bolt.new Project URL:** [https://bolt.new/~/sb1-qhracknh](https://bolt.new/~/sb1-qhracknh)
 - ✅ **Bolt.new Badge:** Prominently displayed on homepage with proper linking
 - ✅ **Full-Stack Implementation:** Complete Next.js application with authentication
 - ✅ **Production Ready:** Deployed and publicly accessible at [localgov.kroszborg.co](https://localgov.kroszborg.co/)
