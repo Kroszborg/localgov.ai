@@ -306,32 +306,6 @@ CREATE TABLE bookmarks (
 
 ---
 
-## 🎨 Badge Assets
-
-The project includes required Bolt.new badges in multiple formats:
-
-- **White Circle:** `/public/white_circle_360x360.png` (for dark backgrounds)
-- **Black Circle:** `/public/black_circle_360x360.png` (for light backgrounds)  
-- **Text Logo:** `/public/logotext_poweredby_360w.png` (text-based variant)
-
-**Implementation Example:**
-```jsx
-<a href="https://bolt.new/" target="_blank" rel="noopener noreferrer">
-  <img 
-    src="/black_circle_360x360.png" 
-    alt="Built with Bolt.new" 
-    className="w-8 h-8 dark:hidden" 
-  />
-  <img 
-    src="/white_circle_360x360.png" 
-    alt="Built with Bolt.new" 
-    className="w-8 h-8 hidden dark:block" 
-  />
-</a>
-```
-
----
-
 ## 📝 Legal & Compliance
 
 ### **Disclaimers**
