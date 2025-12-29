@@ -51,6 +51,7 @@
     "cmdk": "^1.1.1",
     "embla-carousel-react": "^8.6.0",
     "encoding": "^0.1.13",
+    "eventsource-parser": "^3.0.6",
     "input-otp": "^1.4.2",
     "localgov-ai": "file:",
     "lucide-react": "^0.446.0",

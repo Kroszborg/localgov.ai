@@ -1,30 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { createParser } from 'eventsource-parser'
+import { responseCache, generateCacheKey } from '@/lib/cache'
 
 if (!process.env.GEMINI_API_KEY) {
   throw new Error('GEMINI_API_KEY is not set')
 }
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+const apiKey = process.env.GEMINI_API_KEY
 
-export async function POST(request: NextRequest) {
-  try {
-    const { query, location } = await request.json()
-
-    if (!query || !location) {
-      return NextResponse.json(
-        { error: 'Query and location are required' },
-        { status: 400 }
-      )
-    }
-
-    // Get the model inside the request handler - using Gemini 2.0
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash-exp',
-    })
-
-    // Enhanced system prompt for better location handling
-    const systemPrompt = `You are a helpful AI assistant specializing in explaining local government laws and policies in plain English. Your role is to:
+// Enhanced system prompt for better location handling
+const systemPrompt = `You are a helpful AI assistant specializing in explaining local government laws and policies in plain English. Your role is to:
 
 1. Provide clear, accurate information about local laws and regulations for the specific location mentioned
 2. Explain legal concepts in simple, everyday language
@@ -48,22 +33,150 @@ LOCATION HANDLING:
 
 Focus on being helpful, accurate, and clear while maintaining appropriate legal disclaimers.`
 
+export async function POST(request: NextRequest) {
+  try {
+    const { query, location } = await request.json()
+
+    if (!query || !location) {
+      return NextResponse.json(
+        { error: 'Query and location are required' },
+        { status: 400 }
+      )
+    }
+
+    // Check cache first
+    const cacheKey = generateCacheKey(query, location)
+    const cachedResponse = responseCache.get(cacheKey)
+
+    if (cachedResponse) {
+      // Return cached response as stream for consistency
+      const encoder = new TextEncoder()
+      const stream = new ReadableStream({
+        start(controller) {
+          // Send cached content
+          const sseData = `data: ${JSON.stringify({ text: cachedResponse })}\n\n`
+          controller.enqueue(encoder.encode(sseData))
+          // Send completion signal
+          controller.enqueue(encoder.encode('data: {"done": true, "cached": true}\n\n'))
+          controller.close()
+        }
+      })
+
+      return new NextResponse(stream, {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          Connection: 'keep-alive',
+          'X-Cache': 'HIT',
+        },
+      })
+    }
+
     const userPrompt = `I have a question about local laws in ${location}. Please help me understand: ${query}
 
 Please provide a clear explanation in plain English, include relevant disclaimers, and suggest where I might find official sources for verification. If you don't have specific information about ${location}, please provide general guidance for similar jurisdictions and tell me where to find local-specific information.`
 
-    // Combine system and user prompts for Gemini
-    const fullPrompt = `${systemPrompt}\n\n${userPrompt}`
+    // Prepare the request body for Gemini REST API with streaming
+    const requestBody = {
+      contents: [
+        {
+          parts: [{ text: systemPrompt }],
+          role: 'user',
+        },
+        {
+          parts: [{ text: 'I understand. I will act as your local government law assistant.' }],
+          role: 'model',
+        },
+        {
+          parts: [{ text: userPrompt }],
+          role: 'user',
+        },
+      ],
+      generationConfig: {
+        maxOutputTokens: 1200,
+        temperature: 0.7,
+      },
+    }
 
-    // Generate content using Gemini
-    const result = await model.generateContent(fullPrompt)
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:streamGenerateContent?alt=sse&key=${apiKey}`
 
-    const response = result.response
-    const text = response.text() ||
-      "I apologize, but I couldn't generate a response at this time. Please try again later."
+    const response = await fetch(geminiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    })
 
-    return NextResponse.json({ result: text })
+    if (!response.ok) {
+      throw new Error(`Gemini API error: ${response.status}`)
+    }
 
+    const encoder = new TextEncoder()
+
+    const stream = new ReadableStream({
+      async start(controller) {
+        let accumulatedResponse = ''
+        try {
+          const parser = createParser({
+            onEvent: (event) => {
+              try {
+                const data = JSON.parse(event.data)
+                const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
+                if (text) {
+                  accumulatedResponse += text
+                  // Send as Server-Sent Event format
+                  const sseData = `data: ${JSON.stringify({ text })}\n\n`
+                  controller.enqueue(encoder.encode(sseData))
+                }
+              } catch (parseError) {
+                console.error('Parse error:', parseError)
+              }
+            },
+          })
+
+          if (!response.body) {
+            throw new Error('No response body')
+          }
+
+          const reader = response.body.getReader()
+          const decoder = new TextDecoder()
+
+          while (true) {
+            const { done, value } = await reader.read()
+            if (done) break
+
+            parser.feed(decoder.decode(value))
+          }
+
+          // Cache the complete response
+          if (accumulatedResponse) {
+            responseCache.set(cacheKey, accumulatedResponse)
+          }
+
+          // Send completion signal
+          controller.enqueue(encoder.encode('data: {"done": true}\n\n'))
+          controller.close()
+        } catch (error) {
+          console.error('Streaming error:', error)
+          const errorData = `data: ${JSON.stringify({ error: 'Stream error occurred' })}\n\n`
+          controller.enqueue(encoder.encode(errorData))
+          controller.close()
+        }
+      },
+    })
+
+    return new NextResponse(stream, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive',
+        'Access-Control-Allow-Origin': '*',
+        'X-Cache': 'MISS',
+      },
+    })
   } catch (error: any) {
     console.error('Error in search API:', error)
     console.error('Error details:', error?.message, error?.status)

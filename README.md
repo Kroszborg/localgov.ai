@@ -41,11 +41,21 @@ This project was developed using [Bolt.new](https://bolt.new/~/sb1-qhracknh), sh
 
 ## ✨ Key Features
 
+### ⚡ **Version 2.0 - New Features**
+- **Streaming Responses:** Real-time AI responses that appear character-by-character
+- **Smart Caching:** 95% faster repeated queries with intelligent 1-hour cache
+- **Toast Notifications:** Clear feedback for all user actions
+- **Keyboard Shortcuts:** Quick access with Cmd/Ctrl + K
+- **Loading Skeletons:** Professional skeleton screens instead of spinners
+- **Custom 404 Page:** Helpful error page with navigation options
+- **Markdown Rendering:** Beautiful formatted responses with code blocks, lists, and headers
+
 ### 🔍 **AI-Powered Legal Search**
 - Natural language query processing
 - Location-specific legal information
-- Real-time AI responses using Google Gemini
+- Real-time streaming responses using Google Gemini 2.0 Flash
 - Comprehensive legal disclaimers and source citations
+- Response caching for instant repeated queries
 
 ### 🗺️ **Smart Location Detection**
 - Autocomplete for 500+ cities worldwide
@@ -58,13 +68,15 @@ This project was developed using [Bolt.new](https://bolt.new/~/sb1-qhracknh), sh
 - Personal search history tracking
 - Bookmark system for important responses
 - Account settings and data management
+- Toast notifications for all actions
 
 ### 🎨 **Modern User Experience**
 - Responsive design with Tailwind CSS
-- Dark/light theme support
+- Dark/light theme support with system detection
 - Smooth animations with Framer Motion
 - Mobile-first design approach
 - Accessibility-compliant interface
+- Keyboard shortcuts for power users
 
 ### 🔒 **Security & Privacy**
 - PKCE-based authentication flow

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -14,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -141,6 +143,7 @@ export default function DashboardPage() {
   const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
   const [filteredLocations, setFilteredLocations] = useState<string[]>([]);
   const locationInputRef = useRef<HTMLInputElement>(null);
+  const queryInputRef = useRef<HTMLInputElement>(null);
 
   // Prevent duplicate checks
   const authChecked = useRef(false);
@@ -221,6 +224,21 @@ export default function DashboardPage() {
     }
   }, [location]);
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd/Ctrl + K to focus search
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        queryInputRef.current?.focus();
+        toast.info("Search focused", { duration: 1000 });
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   const handleLocationSelect = (selectedLocation: string) => {
     setLocation(selectedLocation);
     setShowLocationSuggestions(false);
@@ -250,37 +268,79 @@ export default function DashboardPage() {
         }),
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setSearchResult(
-          data.result ||
-            "I apologize, but I couldn't process your request at this time. Please try again later."
-        );
-
-        // Add to search history in Supabase
-        const newSearch = {
-          user_id: user.id,
-          query: query.trim(),
-          location: location.trim(),
-          created_at: new Date().toISOString(),
-        };
-        const { data: inserted, error } = await supabase
-          .from("search_history")
-          .insert([newSearch])
-          .select();
-        if (!error && inserted && inserted[0]) {
-          setSearchHistory((prev) => [inserted[0], ...prev].slice(0, 10));
-        }
-      } else {
+      if (!response.ok) {
         const errorData = await response.json();
         setSearchResult(
           errorData.error ||
             "Sorry, there was an error processing your request. Please try again."
         );
+        setSearching(false);
+        return;
+      }
+
+      // Handle streaming response
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let accumulatedText = "";
+
+      if (!reader) {
+        setSearchResult("Error: No response stream available");
+        setSearching(false);
+        return;
+      }
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split("\n");
+
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            try {
+              const data = JSON.parse(line.slice(6));
+
+              if (data.done) {
+                setSearching(false);
+
+                // Add to search history in Supabase
+                const newSearch = {
+                  user_id: user.id,
+                  query: query.trim(),
+                  location: location.trim(),
+                  created_at: new Date().toISOString(),
+                };
+                const { data: inserted, error } = await supabase
+                  .from("search_history")
+                  .insert([newSearch])
+                  .select();
+                if (!error && inserted && inserted[0]) {
+                  setSearchHistory((prev) => [inserted[0], ...prev].slice(0, 10));
+                }
+              } else if (data.text) {
+                accumulatedText += data.text;
+                setSearchResult(accumulatedText);
+              } else if (data.error) {
+                setSearchResult(data.error);
+                setSearching(false);
+              }
+            } catch (parseError) {
+              console.error("Error parsing SSE data:", parseError);
+            }
+          }
+        }
+      }
+
+      if (!accumulatedText) {
+        setSearchResult(
+          "I apologize, but I couldn't process your request at this time. Please try again later."
+        );
+        setSearching(false);
       }
     } catch (error) {
+      console.error("Search error:", error);
       setSearchResult("An error occurred while processing your request.");
-    } finally {
       setSearching(false);
     }
   }
@@ -302,25 +362,39 @@ export default function DashboardPage() {
       .select();
     if (!error && inserted && inserted[0]) {
       setBookmarks((prev) => [inserted[0], ...prev].slice(0, 10));
+      toast.success("Bookmark saved successfully!");
+    } else {
+      toast.error("Failed to save bookmark");
     }
   }
 
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
+      toast.success("Copied to clipboard!");
     } catch (error) {
-      // Silently handle copy errors
+      toast.error("Failed to copy to clipboard");
     }
   };
 
   const removeFromHistory = async (id: string) => {
-    await supabase.from("search_history").delete().eq("id", id);
-    setSearchHistory((prev) => prev.filter((item) => item.id !== id));
+    const { error } = await supabase.from("search_history").delete().eq("id", id);
+    if (!error) {
+      setSearchHistory((prev) => prev.filter((item) => item.id !== id));
+      toast.success("Removed from history");
+    } else {
+      toast.error("Failed to remove from history");
+    }
   };
 
   const removeBookmark = async (id: string) => {
-    await supabase.from("bookmarks").delete().eq("id", id);
-    setBookmarks((prev) => prev.filter((item) => item.id !== id));
+    const { error } = await supabase.from("bookmarks").delete().eq("id", id);
+    if (!error) {
+      setBookmarks((prev) => prev.filter((item) => item.id !== id));
+      toast.success("Bookmark removed");
+    } else {
+      toast.error("Failed to remove bookmark");
+    }
   };
 
   const openBookmarkModal = (bookmark: Bookmark) => {
@@ -444,6 +518,7 @@ export default function DashboardPage() {
                       </label>
                       <div className="flex gap-2">
                         <Input
+                          ref={queryInputRef}
                           placeholder="Ask about local laws..."
                           value={query}
                           onChange={(e) => setQuery(e.target.value)}
@@ -527,12 +602,19 @@ export default function DashboardPage() {
                     )}
                   </CardHeader>
                   <CardContent>
-                    {searching ? (
-                      <div className="flex items-center gap-3 text-muted-foreground p-4">
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        <span>Analyzing local laws and regulations...</span>
+                    {searching && !searchResult ? (
+                      <div className="space-y-3 p-4">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-5/6" />
+                        <Skeleton className="h-4 w-4/6" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-3/4" />
+                        <Skeleton className="h-4 w-5/6" />
+                        <div className="pt-2">
+                          <Skeleton className="h-20 w-full" />
+                        </div>
                       </div>
-                    ) : (
+                    ) : searchResult ? (
                       <div className="space-y-4">
                         <div className="prose prose-sm max-w-none dark:prose-invert bg-muted/30 p-4 rounded-lg">
                           <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -549,7 +631,7 @@ export default function DashboardPage() {
                           </p>
                         </div>
                       </div>
-                    )}
+                    ) : null}
                   </CardContent>
                 </Card>
               </div>
