@@ -3,6 +3,8 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   Card,
   CardContent,
@@ -532,10 +534,10 @@ export default function DashboardPage() {
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        <div className="prose prose-sm max-w-none bg-muted/30 p-4 rounded-lg">
-                          <p className="whitespace-pre-wrap m-0">
+                        <div className="prose prose-sm max-w-none dark:prose-invert bg-muted/30 p-4 rounded-lg">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
                             {searchResult}
-                          </p>
+                          </ReactMarkdown>
                         </div>
                         <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
                           <p className="text-xs text-amber-800 dark:text-amber-200">
@@ -746,10 +748,10 @@ export default function DashboardPage() {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold mb-2">AI Response</h3>
-                    <div className="prose prose-sm max-w-none bg-muted/30 p-4 rounded-lg">
-                      <p className="whitespace-pre-wrap m-0">
+                    <div className="prose prose-sm max-w-none dark:prose-invert bg-muted/30 p-4 rounded-lg">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
                         {selectedBookmark.content}
-                      </p>
+                      </ReactMarkdown>
                     </div>
                   </div>
                 </div>

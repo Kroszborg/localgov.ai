@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import OpenAI from 'openai'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+if (!process.env.GEMINI_API_KEY) {
+  throw new Error('GEMINI_API_KEY is not set')
+}
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,6 +17,11 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    // Get the model inside the request handler - using Gemini 2.0
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.0-flash-exp',
+    })
 
     // Enhanced system prompt for better location handling
     const systemPrompt = `You are a helpful AI assistant specializing in explaining local government laws and policies in plain English. Your role is to:
@@ -45,27 +52,27 @@ Focus on being helpful, accurate, and clear while maintaining appropriate legal 
 
 Please provide a clear explanation in plain English, include relevant disclaimers, and suggest where I might find official sources for verification. If you don't have specific information about ${location}, please provide general guidance for similar jurisdictions and tell me where to find local-specific information.`
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt }
-      ],
-      max_tokens: 1200,
-      temperature: 0.7,
-    })
+    // Combine system and user prompts for Gemini
+    const fullPrompt = `${systemPrompt}\n\n${userPrompt}`
 
-    const result = completion.choices[0]?.message?.content || 
+    // Generate content using Gemini
+    const result = await model.generateContent(fullPrompt)
+
+    const response = result.response
+    const text = response.text() ||
       "I apologize, but I couldn't generate a response at this time. Please try again later."
 
-    return NextResponse.json({ result })
+    return NextResponse.json({ result: text })
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in search API:', error)
-    
-    // Don't expose internal errors to the client
+    console.error('Error details:', error?.message, error?.status)
+
+    // Provide more specific error message for debugging
+    const errorMessage = error?.message || 'An error occurred while processing your request'
+
     return NextResponse.json(
-      { error: 'An error occurred while processing your request' },
+      { error: errorMessage },
       { status: 500 }
     )
   }

@@ -44,7 +44,7 @@ This project was developed using [Bolt.new](https://bolt.new/~/sb1-qhracknh), sh
 ### 🔍 **AI-Powered Legal Search**
 - Natural language query processing
 - Location-specific legal information
-- Real-time AI responses using OpenAI GPT-4
+- Real-time AI responses using Google Gemini
 - Comprehensive legal disclaimers and source citations
 
 ### 🗺️ **Smart Location Detection**
@@ -88,7 +88,7 @@ This project was developed using [Bolt.new](https://bolt.new/~/sb1-qhracknh), sh
 ### **Backend & Infrastructure**
 - **Authentication:** Supabase Auth with PKCE flow
 - **Database:** Supabase PostgreSQL
-- **AI Integration:** OpenAI GPT-4 API
+- **AI Integration:** Google Gemini API
 - **Deployment:** Vercel with Analytics
 - **Middleware:** Custom rate limiting and security
 
@@ -158,7 +158,7 @@ localgov-ai/
 ### **Prerequisites**
 - Node.js 18+ and npm
 - Supabase account with project setup
-- OpenAI API key
+- Google Gemini API key
 
 ### **Environment Setup**
 Create a `.env.local` file with:
@@ -168,8 +168,8 @@ NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
-# OpenAI Configuration
-OPENAI_API_KEY=your_openai_api_key
+# Google Gemini Configuration
+GEMINI_API_KEY=your_gemini_api_key
 ```
 
 ### **Installation & Development**
@@ -233,7 +233,7 @@ CREATE TABLE bookmarks (
 
 ### **Technical Excellence**
 - **Modern Stack:** Latest Next.js with TypeScript and advanced React patterns
-- **AI Integration:** Sophisticated OpenAI GPT-4 implementation with context awareness
+- **AI Integration:** Sophisticated Google Gemini implementation with context awareness
 - **Database Design:** Efficient Supabase schema with proper relationships
 - **Security:** Industry-standard authentication and data protection
 
@@ -359,7 +359,7 @@ This project is developed for the Bolt.new hackathon. All third-party integratio
 ## 🙏 Acknowledgments
 
 - **[Bolt.new](https://bolt.new/)** - For providing an exceptional development platform that enabled rapid full-stack development
-- **OpenAI** - For GPT-4 API that powers the intelligent legal explanations
+- **Google** - For Gemini API that powers the intelligent legal explanations
 - **Supabase** - For robust authentication and database infrastructure
 - **Vercel** - For seamless deployment and performance optimization
 - **shadcn/ui** - For beautiful, accessible UI components
