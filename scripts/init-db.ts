@@ -2,7 +2,7 @@ import { Pool } from 'pg';
 
 // Hardcode the database URL for initialization
 // Replace this with your actual DATABASE_URL from .env
-const DATABASE_URL = 'postgresql://neondb_owner:npg_pBNIF19mJfPK@ep-sweet-forest-a1gzvf9u-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require';
+const DATABASE_URL = '';
 
 const pool = new Pool({
   connectionString: DATABASE_URL,
