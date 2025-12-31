@@ -1,13 +1,16 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Suspense } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { PageTransition } from "@/components/page-transition";
 import { Analytics } from "@vercel/analytics/next";
+import { StackAuthProvider } from "@/components/stack-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -45,25 +48,31 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
-          <div className="flex min-h-screen flex-col">
-            <Header />
-            <main className="flex-1">
-              <PageTransition>
-                {children}
-                <Analytics />
-              </PageTransition>
-            </main>
-            <Footer />
-          </div>
-          <Toaster />
-          <Sonner />
-        </ThemeProvider>
+        <StackAuthProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem={false}
+            disableTransitionOnChange
+          >
+            <TooltipProvider>
+              <div className="flex min-h-screen flex-col">
+                <Suspense fallback={<div className="h-16 border-b" />}>
+                  <Header />
+                </Suspense>
+                <main className="flex-1">
+                  <PageTransition>
+                    {children}
+                    <Analytics />
+                  </PageTransition>
+                </main>
+                <Footer />
+              </div>
+              <Toaster />
+              <Sonner />
+            </TooltipProvider>
+          </ThemeProvider>
+        </StackAuthProvider>
       </body>
     </html>
   );

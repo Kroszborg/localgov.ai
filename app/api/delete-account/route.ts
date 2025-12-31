@@ -1,31 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { stackServerApp } from '@/lib/stack';
+import pool from '@/lib/db';
 
 export async function DELETE(req: NextRequest) {
-  const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  try {
+    const user = await stackServerApp.getUser();
 
-  // Get the user's JWT from the cookies/headers
-  const authHeader = req.headers.get('authorization');
-  const jwt = authHeader?.replace('Bearer ', '') || req.cookies.get('sb-access-token')?.value;
+    if (!user) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
 
-  if (!jwt) {
-    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    // Delete user's data from database
+    await pool.query('DELETE FROM search_history WHERE user_id = $1', [user.id]);
+    await pool.query('DELETE FROM bookmarks WHERE user_id = $1', [user.id]);
+
+    // Delete user account from Stack Auth
+    await user.delete();
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting account:', error);
+    return NextResponse.json({ error: 'Failed to delete account' }, { status: 500 });
   }
-
-  // Get the user from the JWT
-  const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(jwt);
-  if (userError || !user) {
-    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-  }
-
-  // Delete the user
-  const { error } = await supabaseAdmin.auth.admin.deleteUser(user.id);
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  return NextResponse.json({ success: true });
-} 
+}

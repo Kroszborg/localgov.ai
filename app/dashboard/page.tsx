@@ -22,7 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { supabase } from "@/lib/supabase";
+import { useUser } from "@stackframe/stack";
 import {
   Bookmark,
   History,
@@ -32,9 +32,7 @@ import {
   ArrowRight,
   Loader2,
   Copy,
-  Share,
   Trash2,
-  Star,
   Eye,
   Calendar,
 } from "lucide-react";
@@ -58,7 +56,6 @@ interface Bookmark {
 
 // Extended location suggestions for better autocomplete
 const locationSuggestions = [
-  // US Major Cities
   "New York, NY",
   "Los Angeles, CA",
   "Chicago, IL",
@@ -71,37 +68,14 @@ const locationSuggestions = [
   "San Jose, CA",
   "Austin, TX",
   "Jacksonville, FL",
-  "Fort Worth, TX",
-  "Columbus, OH",
-  "Charlotte, NC",
-  "San Francisco, CA",
-  "Indianapolis, IN",
   "Seattle, WA",
   "Denver, CO",
   "Boston, MA",
-  "Nashville, TN",
-  "Detroit, MI",
-  "Portland, OR",
-  "Las Vegas, NV",
   "Miami, FL",
   "Atlanta, GA",
-  "Tampa, FL",
-  "Orlando, FL",
-  "Minneapolis, MN",
-  "Cleveland, OH",
-
-  // International Cities
-  "London, UK",
-  "Paris, France",
-  "Berlin, Germany",
-  "Tokyo, Japan",
-  "Sydney, Australia",
-  "Toronto, Canada",
-  "Vancouver, Canada",
-  "Melbourne, Australia",
-  "Dublin, Ireland",
-
-  // Indian Cities (since user searched Dehradun)
+  "San Francisco, CA",
+  "Portland, OR",
+  "Las Vegas, NV",
   "Mumbai, India",
   "Delhi, India",
   "Bangalore, India",
@@ -109,24 +83,18 @@ const locationSuggestions = [
   "Chennai, India",
   "Kolkata, India",
   "Pune, India",
-  "Ahmedabad, India",
-  "Surat, India",
-  "Jaipur, India",
-  "Lucknow, India",
-  "Kanpur, India",
-  "Nagpur, India",
   "Dehradun, India",
-  "Gurgaon, India",
-  "Noida, India",
-  "Chandigarh, India",
-  "Kochi, India",
-  "Coimbatore, India",
-  "Indore, India",
+  "London, UK",
+  "Paris, France",
+  "Berlin, Germany",
+  "Tokyo, Japan",
+  "Sydney, Australia",
+  "Toronto, Canada",
 ];
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const user = useUser();
   const [loading, setLoading] = useState(true);
   const [searchHistory, setSearchHistory] = useState<SearchHistory[]>([]);
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
@@ -145,76 +113,46 @@ export default function DashboardPage() {
   const locationInputRef = useRef<HTMLInputElement>(null);
   const queryInputRef = useRef<HTMLInputElement>(null);
 
-  // Prevent duplicate checks
-  const authChecked = useRef(false);
-  const authListener = useRef<any>(null);
+  const fetchData = useCallback(async () => {
+    if (!user || !user.id) return;
 
-  const checkUserOnce = useCallback(async () => {
     try {
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession();
+      const [historyRes, bookmarksRes] = await Promise.all([
+        fetch('/api/history'),
+        fetch('/api/bookmarks'),
+      ]);
 
-      if (error || !session?.user) {
-        router.push("/auth/signin");
-        return;
+      if (historyRes.ok) {
+        const historyData = await historyRes.json();
+        setSearchHistory(historyData);
       }
 
-      setUser(session.user);
-
-      // Fetch from Supabase
-      const { data: searches } = await supabase
-        .from("search_history")
-        .select("*")
-        .eq("user_id", session.user.id)
-        .order("created_at", { ascending: false })
-        .limit(10);
-      setSearchHistory(searches || []);
-
-      const { data: bookmarksData } = await supabase
-        .from("bookmarks")
-        .select("*")
-        .eq("user_id", session.user.id)
-        .order("created_at", { ascending: false })
-        .limit(10);
-      setBookmarks(bookmarksData || []);
+      if (bookmarksRes.ok) {
+        const bookmarksData = await bookmarksRes.json();
+        setBookmarks(bookmarksData);
+      }
 
       setLoading(false);
-
-      if (!authListener.current) {
-        const {
-          data: { subscription },
-        } = supabase.auth.onAuthStateChange((event, session) => {
-          if (event === "SIGNED_OUT" || !session) {
-            router.push("/auth/signin");
-          }
-        });
-        authListener.current = subscription;
-      }
     } catch (error) {
-      router.push("/auth/signin");
+      console.error('Error fetching data:', error);
+      setLoading(false);
     }
-  }, [router]);
+  }, [user]);
 
   useEffect(() => {
-    if (authChecked.current) return;
-    authChecked.current = true;
-    checkUserOnce();
-
-    return () => {
-      if (authListener.current) {
-        authListener.current.unsubscribe();
-      }
-    };
-  }, [checkUserOnce]);
+    if (user && user.id) {
+      fetchData();
+    } else if (user === null) {
+      router.push('/auth/signin');
+    }
+  }, [user, router, fetchData]);
 
   // Location autocomplete logic
   useEffect(() => {
     if (location.length >= 2) {
       const filtered = locationSuggestions
         .filter((loc) => loc.toLowerCase().includes(location.toLowerCase()))
-        .slice(0, 8); // Show max 8 suggestions
+        .slice(0, 8);
 
       setFilteredLocations(filtered);
       setShowLocationSuggestions(filtered.length > 0);
@@ -227,7 +165,6 @@ export default function DashboardPage() {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Cmd/Ctrl + K to focus search
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         queryInputRef.current?.focus();
@@ -278,7 +215,6 @@ export default function DashboardPage() {
         return;
       }
 
-      // Handle streaming response
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
       let accumulatedText = "";
@@ -304,19 +240,16 @@ export default function DashboardPage() {
               if (data.done) {
                 setSearching(false);
 
-                // Add to search history in Supabase
-                const newSearch = {
-                  user_id: user.id,
-                  query: query.trim(),
-                  location: location.trim(),
-                  created_at: new Date().toISOString(),
-                };
-                const { data: inserted, error } = await supabase
-                  .from("search_history")
-                  .insert([newSearch])
-                  .select();
-                if (!error && inserted && inserted[0]) {
-                  setSearchHistory((prev) => [inserted[0], ...prev].slice(0, 10));
+                // Add to search history
+                const response = await fetch('/api/history', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ query: query.trim(), location: location.trim() }),
+                });
+
+                if (response.ok) {
+                  const newHistory = await response.json();
+                  setSearchHistory((prev) => [newHistory, ...prev].slice(0, 10));
                 }
               } else if (data.text) {
                 accumulatedText += data.text;
@@ -348,22 +281,26 @@ export default function DashboardPage() {
   async function saveBookmark() {
     if (!searchResult || !user || !query) return;
 
-    const newBookmark = {
-      user_id: user.id,
-      title: query.slice(0, 100),
-      query: query,
-      location: location,
-      content: searchResult,
-      created_at: new Date().toISOString(),
-    };
-    const { data: inserted, error } = await supabase
-      .from("bookmarks")
-      .insert([newBookmark])
-      .select();
-    if (!error && inserted && inserted[0]) {
-      setBookmarks((prev) => [inserted[0], ...prev].slice(0, 10));
-      toast.success("Bookmark saved successfully!");
-    } else {
+    try {
+      const response = await fetch('/api/bookmarks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: query.slice(0, 100),
+          content: searchResult,
+          query,
+          location,
+        }),
+      });
+
+      if (response.ok) {
+        const newBookmark = await response.json();
+        setBookmarks((prev) => [newBookmark, ...prev].slice(0, 10));
+        toast.success("Bookmark saved successfully!");
+      } else {
+        toast.error("Failed to save bookmark");
+      }
+    } catch (error) {
       toast.error("Failed to save bookmark");
     }
   }
@@ -378,21 +315,31 @@ export default function DashboardPage() {
   };
 
   const removeFromHistory = async (id: string) => {
-    const { error } = await supabase.from("search_history").delete().eq("id", id);
-    if (!error) {
-      setSearchHistory((prev) => prev.filter((item) => item.id !== id));
-      toast.success("Removed from history");
-    } else {
+    try {
+      const response = await fetch(`/api/history?id=${id}`, { method: 'DELETE' });
+
+      if (response.ok) {
+        setSearchHistory((prev) => prev.filter((item) => item.id !== id));
+        toast.success("Removed from history");
+      } else {
+        toast.error("Failed to remove from history");
+      }
+    } catch (error) {
       toast.error("Failed to remove from history");
     }
   };
 
   const removeBookmark = async (id: string) => {
-    const { error } = await supabase.from("bookmarks").delete().eq("id", id);
-    if (!error) {
-      setBookmarks((prev) => prev.filter((item) => item.id !== id));
-      toast.success("Bookmark removed");
-    } else {
+    try {
+      const response = await fetch(`/api/bookmarks?id=${id}`, { method: 'DELETE' });
+
+      if (response.ok) {
+        setBookmarks((prev) => prev.filter((item) => item.id !== id));
+        toast.success("Bookmark removed");
+      } else {
+        toast.error("Failed to remove bookmark");
+      }
+    } catch (error) {
       toast.error("Failed to remove bookmark");
     }
   };
@@ -413,7 +360,7 @@ export default function DashboardPage() {
     "Pet ownership regulations",
   ];
 
-  if (loading) {
+  if (loading || !user) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-center min-h-[50vh]">
@@ -428,31 +375,23 @@ export default function DashboardPage() {
     );
   }
 
-  if (!user) {
-    window.location.replace("/auth/signin");
-    return null;
-  }
-
   return (
     <div className="container mx-auto px-4 md:px-6 py-8">
       <div className="max-w-7xl mx-auto">
-        {/* Welcome Section (no animation) */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold mb-2">
-                Welcome back, {user.email?.split("@")[0]}! 👋
+                Welcome back, {user.displayName || user.primaryEmail?.split("@")[0]}! 👋
               </h1>
               <p className="text-muted-foreground">
-                Ask questions about local laws and get clear, AI-powered
-                answers.
+                Ask questions about local laws and get clear, AI-powered answers.
               </p>
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Search Area (no animation) */}
           <div className="lg:col-span-2 space-y-6">
             <Card className="border-2 border-primary/10 shadow-lg">
               <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10">
@@ -461,14 +400,12 @@ export default function DashboardPage() {
                   Ask About Local Laws
                 </CardTitle>
                 <CardDescription>
-                  Enter your location and ask your question about local laws and
-                  regulations
+                  Enter your location and ask your question about local laws and regulations
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6 p-6">
                 <form onSubmit={handleSearch} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Enhanced Location Input with Autocomplete */}
                     <div className="space-y-2 relative">
                       <label className="text-sm font-medium flex items-center gap-2">
                         <MapPin className="w-4 h-4" />
@@ -493,7 +430,6 @@ export default function DashboardPage() {
                           className="pl-4 pr-4"
                           required
                         />
-                        {/* Location Suggestions Dropdown */}
                         {showLocationSuggestions && (
                           <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-background border rounded-md shadow-lg max-h-48 overflow-y-auto">
                             {filteredLocations.map((loc, index) => (
@@ -510,7 +446,6 @@ export default function DashboardPage() {
                         )}
                       </div>
                     </div>
-                    {/* Enhanced Question Input */}
                     <div className="space-y-2">
                       <label className="text-sm font-medium flex items-center gap-2">
                         <Search className="w-4 h-4" />
@@ -527,9 +462,7 @@ export default function DashboardPage() {
                         />
                         <Button
                           type="submit"
-                          disabled={
-                            searching || !location.trim() || !query.trim()
-                          }
+                          disabled={searching || !location.trim() || !query.trim()}
                           className="px-6"
                         >
                           {searching ? (
@@ -542,7 +475,6 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 </form>
-                {/* Example Questions */}
                 <div className="space-y-3">
                   <label className="text-sm font-medium">
                     Popular questions:
@@ -561,7 +493,7 @@ export default function DashboardPage() {
                 </div>
               </CardContent>
             </Card>
-            {/* Search Results (no animation) */}
+
             {(searchResult || searching) && (
               <div>
                 <Card className="border-l-4 border-l-primary">
@@ -623,11 +555,10 @@ export default function DashboardPage() {
                         </div>
                         <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
                           <p className="text-xs text-amber-800 dark:text-amber-200">
-                            <strong>⚠️ Legal Disclaimer:</strong> This
-                            information is for general guidance only and should
-                            not be considered legal advice. Always consult with
-                            a qualified legal professional for specific legal
-                            matters.
+                            <strong>⚠️ Legal Disclaimer:</strong> This information
+                            is for general guidance only and should not be
+                            considered legal advice. Always consult with a
+                            qualified legal professional for specific legal matters.
                           </p>
                         </div>
                       </div>
@@ -637,9 +568,8 @@ export default function DashboardPage() {
               </div>
             )}
           </div>
-          {/* Sidebar (no animation) */}
+
           <div className="space-y-6">
-            {/* Recent Searches */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
@@ -672,9 +602,7 @@ export default function DashboardPage() {
                               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                 <Clock className="w-3 h-3" />
                                 <span>
-                                  {new Date(
-                                    item.created_at
-                                  ).toLocaleDateString()}
+                                  {new Date(item.created_at).toLocaleDateString()}
                                 </span>
                               </div>
                             </div>
@@ -705,7 +633,7 @@ export default function DashboardPage() {
                 </ScrollArea>
               </CardContent>
             </Card>
-            {/* Bookmarks */}
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
@@ -739,9 +667,7 @@ export default function DashboardPage() {
                               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                 <Clock className="w-3 h-3" />
                                 <span>
-                                  {new Date(
-                                    bookmark.created_at
-                                  ).toLocaleDateString()}
+                                  {new Date(bookmark.created_at).toLocaleDateString()}
                                 </span>
                               </div>
                               <div className="flex items-center gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
@@ -758,9 +684,7 @@ export default function DashboardPage() {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() =>
-                                    copyToClipboard(bookmark.content)
-                                  }
+                                  onClick={() => copyToClipboard(bookmark.content)}
                                   className="h-8 px-3 text-xs md:h-6 md:px-2"
                                   aria-label="Copy bookmark"
                                 >
@@ -783,8 +707,7 @@ export default function DashboardPage() {
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground text-center py-8">
-                      No bookmarks yet. Save helpful responses to reference
-                      later!
+                      No bookmarks yet. Save helpful responses to reference later!
                     </p>
                   )}
                 </ScrollArea>
@@ -792,11 +715,8 @@ export default function DashboardPage() {
             </Card>
           </div>
         </div>
-        {/* Bookmark Detail Modal */}
-        <Dialog
-          open={isBookmarkModalOpen}
-          onOpenChange={setIsBookmarkModalOpen}
-        >
+
+        <Dialog open={isBookmarkModalOpen} onOpenChange={setIsBookmarkModalOpen}>
           <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
@@ -811,9 +731,7 @@ export default function DashboardPage() {
                     <Calendar className="w-4 h-4" />
                     <span>
                       Saved on{" "}
-                      {new Date(
-                        selectedBookmark.created_at
-                      ).toLocaleDateString()}
+                      {new Date(selectedBookmark.created_at).toLocaleDateString()}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -861,9 +779,8 @@ export default function DashboardPage() {
                 </div>
                 <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
                   <p className="text-xs text-amber-800 dark:text-amber-200">
-                    <strong>⚠️ Legal Disclaimer:</strong> This information is
-                    for general guidance only and should not be considered legal
-                    advice.
+                    <strong>⚠️ Legal Disclaimer:</strong> This information is for
+                    general guidance only and should not be considered legal advice.
                   </p>
                 </div>
               </div>

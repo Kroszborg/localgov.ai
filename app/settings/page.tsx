@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { useUser } from "@stackframe/stack";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,6 +30,8 @@ import {
 } from "lucide-react";
 
 export default function SettingsPage() {
+  const user = useUser();
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(true);
@@ -37,70 +39,48 @@ export default function SettingsPage() {
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
   const [showDelete, setShowDelete] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      setLoading(true);
-      setError("");
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-      if (userError || !user) {
-        setError("Could not fetch user profile.");
-        setLoading(false);
-        return;
-      }
-      setEmail(user.email || "");
-      setName(user.user_metadata?.name || "");
+    if (user && user.id) {
+      setEmail(user.primaryEmail || "");
+      setName(user.displayName || "");
       setLoading(false);
-    };
-    fetchProfile();
-  }, []);
+    } else if (user === null) {
+      router.push("/auth/signin");
+    }
+  }, [user, router]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     setSuccess("");
     setError("");
-    // Update user metadata (name)
-    const { error: updateError } = await supabase.auth.updateUser({
-      data: { name },
-    });
-    if (updateError) {
-      setError("Failed to update profile.");
-    } else {
+
+    try {
+      await user?.update({ displayName: name });
       setSuccess("Profile updated successfully.");
+    } catch (err) {
+      setError("Failed to update profile.");
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   const handleDelete = async () => {
     setError("");
     setSuccess("");
     setShowDelete(false);
+
     try {
-      // Get the current session and access token
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const accessToken = session?.access_token;
-      if (!accessToken) {
-        setError("Not authenticated.");
-        return;
-      }
-      const res = await fetch("/api/delete-account", {
+      const response = await fetch("/api/delete-account", {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
       });
-      if (res.ok) {
-        await supabase.auth.signOut();
+
+      if (response.ok) {
+        await user?.signOut();
         router.push("/");
       } else {
-        const data = await res.json();
+        const data = await response.json();
         setError(data.error || "Failed to delete account.");
       }
     } catch (err) {
@@ -108,7 +88,7 @@ export default function SettingsPage() {
     }
   };
 
-  if (loading) {
+  if (loading || !user) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-center min-h-[50vh]">
@@ -377,7 +357,6 @@ export default function SettingsPage() {
                   </Button>
                 </CardContent>
               </Card>
-
             </motion.div>
           </div>
         </div>

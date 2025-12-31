@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { supabase } from "@/lib/supabase";
+import { useUser } from "@stackframe/stack";
 import { Menu, X, User, LogOut, Settings, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -20,36 +20,9 @@ import {
 export function Header() {
   const pathname = usePathname();
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const user = useUser();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    const getUser = async () => {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        setUser(user);
-      } catch (error) {
-        // Silently handle auth errors
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getUser();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
 
   // Handle scroll effect
   useEffect(() => {
@@ -63,7 +36,7 @@ export function Header() {
 
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut();
+      await user?.signOut();
       setMobileMenuOpen(false);
       router.push("/");
     } catch (error) {
@@ -72,6 +45,7 @@ export function Header() {
   };
 
   const isAuthPage = pathname.startsWith("/auth/");
+  const isSignedIn = !!user;
 
   return (
     <motion.header
@@ -127,7 +101,7 @@ export function Header() {
             </Link>
           </motion.div>
 
-          {user && !isAuthPage && (
+          {isSignedIn && !isAuthPage && (
             <motion.div whileHover={{ y: -2 }} transition={{ duration: 0.2 }}>
               <Link
                 href="/dashboard"
@@ -155,87 +129,86 @@ export function Header() {
           <div className="flex items-center gap-4">
             <ThemeToggle />
 
-            {!loading &&
-              (user ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="flex items-center gap-2"
-                      >
-                        <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center">
-                          <User className="w-3 h-3" />
-                        </div>
-                        <span className="hidden lg:inline-block max-w-[120px] truncate">
-                          {user.email?.split("@")[0]}
-                        </span>
-                      </Button>
-                    </motion.div>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel className="flex items-center gap-2">
-                      <User className="w-4 h-4" />
-                      My Account
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link
-                        href="/dashboard"
-                        className="flex items-center gap-2 w-full"
-                      >
-                        <BookOpen className="w-4 h-4" />
-                        Dashboard
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link
-                        href="/settings"
-                        className="flex items-center gap-2 w-full"
-                      >
-                        <Settings className="w-4 h-4" />
-                        Settings
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={handleSignOut}
-                      className="flex items-center gap-2 text-destructive focus:text-destructive"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Sign Out
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <motion.div
-                  className="flex items-center gap-2"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Button asChild variant="ghost" size="sm">
-                    <Link href="/auth/signin">Sign In</Link>
-                  </Button>
+            {isSignedIn ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
                   <motion.div
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
                     <Button
-                      asChild
-                      variant="default"
+                      variant="ghost"
                       size="sm"
-                      className="shadow-lg"
+                      className="flex items-center gap-2"
                     >
-                      <Link href="/auth/signup">Get Started</Link>
+                      <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center">
+                        <User className="w-3 h-3" />
+                      </div>
+                      <span className="hidden lg:inline-block max-w-[120px] truncate">
+                        {user?.primaryEmail?.split("@")[0]}
+                      </span>
                     </Button>
                   </motion.div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    My Account
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href="/dashboard"
+                      className="flex items-center gap-2 w-full"
+                    >
+                      <BookOpen className="w-4 h-4" />
+                      Dashboard
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href="/settings"
+                      className="flex items-center gap-2 w-full"
+                    >
+                      <Settings className="w-4 h-4" />
+                      Settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleSignOut}
+                    className="flex items-center gap-2 text-destructive focus:text-destructive"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <motion.div
+                className="flex items-center gap-2"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Button asChild variant="ghost" size="sm">
+                  <Link href="/auth/signin">Sign In</Link>
+                </Button>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    asChild
+                    variant="default"
+                    size="sm"
+                    className="shadow-lg"
+                  >
+                    <Link href="/auth/signup">Get Started</Link>
+                  </Button>
                 </motion.div>
-              ))}
+              </motion.div>
+            )}
 
             {/* Bolt.new badge */}
             <a
@@ -327,7 +300,7 @@ export function Header() {
                 </Link>
               </motion.div>
 
-              {user && !isAuthPage && (
+              {isSignedIn && !isAuthPage && (
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -348,7 +321,7 @@ export function Header() {
                 </motion.div>
               )}
 
-              {user && (
+              {isSignedIn && (
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -371,72 +344,71 @@ export function Header() {
 
               {/* Auth Section */}
               <div className="pt-3 border-t border-border/50">
-                {!loading &&
-                  (user ? (
-                    <motion.div
-                      className="space-y-2"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.25, duration: 0.3 }}
-                    >
-                      <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                          <User className="w-5 h-5 text-primary" />
+                {isSignedIn ? (
+                  <motion.div
+                    className="space-y-2"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.25, duration: 0.3 }}
+                  >
+                    <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                        <User className="w-5 h-5 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm truncate">
+                          {user?.primaryEmail?.split("@")[0]}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm truncate">
-                            {user.email?.split("@")[0]}
-                          </div>
-                          <div className="text-xs text-muted-foreground truncate">
-                            {user.email}
-                          </div>
+                        <div className="text-xs text-muted-foreground truncate">
+                          {user?.primaryEmail}
                         </div>
                       </div>
-                      <Button
-                        onClick={handleSignOut}
-                        variant="outline"
-                        size="sm"
-                        className="w-full justify-start gap-2 h-11"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        Sign Out
-                      </Button>
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      className="space-y-2"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.25, duration: 0.3 }}
+                    </div>
+                    <Button
+                      onClick={handleSignOut}
+                      variant="outline"
+                      size="sm"
+                      className="w-full justify-start gap-2 h-11"
                     >
-                      <Button
-                        asChild
-                        variant="ghost"
-                        size="sm"
-                        className="w-full justify-start h-11"
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </Button>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    className="space-y-2"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.25, duration: 0.3 }}
+                  >
+                    <Button
+                      asChild
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start h-11"
+                    >
+                      <Link
+                        href="/auth/signin"
+                        onClick={() => setMobileMenuOpen(false)}
                       >
-                        <Link
-                          href="/auth/signin"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          Sign In
-                        </Link>
-                      </Button>
-                      <Button
-                        asChild
-                        variant="default"
-                        size="sm"
-                        className="w-full h-11"
+                        Sign In
+                      </Link>
+                    </Button>
+                    <Button
+                      asChild
+                      variant="default"
+                      size="sm"
+                      className="w-full h-11"
+                    >
+                      <Link
+                        href="/auth/signup"
+                        onClick={() => setMobileMenuOpen(false)}
                       >
-                        <Link
-                          href="/auth/signup"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          Get Started
-                        </Link>
-                      </Button>
-                    </motion.div>
-                  ))}
+                        Get Started
+                      </Link>
+                    </Button>
+                  </motion.div>
+                )}
               </div>
             </nav>
           </motion.div>
