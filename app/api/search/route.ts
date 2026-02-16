@@ -99,7 +99,7 @@ Please provide a clear explanation in plain English, include relevant disclaimer
       },
     }
 
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:streamGenerateContent?alt=sse&key=${apiKey}`
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&key=${apiKey}`
 
     const response = await fetch(geminiUrl, {
       method: 'POST',
